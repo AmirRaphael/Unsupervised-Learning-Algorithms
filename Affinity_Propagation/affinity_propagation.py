@@ -1,12 +1,45 @@
 import numpy as np
 
 
-def euclidean_distances_squared(M1, M2):
+def compute_squared_euclidean_distances(M):
     """
-    Considering the rows of M1 and M2 as vectors, compute the squared distance matrix between each pair of vectors.
-    :param M1: array of shape (n_samples_M1, n_features)
-    :param M2: array of shape (n_samples_M2, n_features)
-    :return: distances: array of shape (n_samples_M1, n_samples_M2)
+    Considering the rows of M as vectors, compute the squared distance matrix between each pair of vectors.
+    :param M: array of shape (n_samples_M, n_features)
+    :return: distances: array of shape (n_samples_M, n_samples_M)
+    """
+    # TODO: implement
+    pass
+
+
+def compute_responsibility(
+        similarity_matrix,
+        availability_matrix,
+        responsibility_matrix,
+        damping_factor
+):
+    """
+    Compute the responsibilities.
+    :param similarity_matrix:
+    :param availability_matrix:
+    :param responsibility_matrix:
+    :param damping_factor:
+    :return: updated responsibility matrix: array of shape (n_samples, n_samples)
+    """
+    # TODO: implement
+    pass
+
+
+def compute_availability(
+        availability_matrix,
+        responsibility_matrix,
+        damping_factor
+):
+    """
+    Compute the availabilities.
+    :param availability_matrix:
+    :param responsibility_matrix:
+    :param damping_factor:
+    :return: updated availability matrix: array of shape (n_samples, n_samples)
     """
     # TODO: implement
     pass
@@ -36,7 +69,12 @@ def affinity_propagation(
     availability_matrix = np.zeros((n_samples, n_samples))
     responsibility_matrix = np.zeros((n_samples, n_samples))
 
-    pass
+    for iteration in range(max_iter):
+        responsibility_matrix = compute_responsibility(similarity_matrix, availability_matrix, responsibility_matrix, damping_factor)
+        availability_matrix = compute_availability(availability_matrix, responsibility_matrix, damping_factor)
+        # check if clusters changed
+
+    # return centers, labels, n_iter
 
 
 class AffinityPropagation:
@@ -61,7 +99,10 @@ class AffinityPropagation:
         :return: self - the instance of this AffinityPropagation class
         """
         # the similarity of 2 data points is defined as the negative squared euclidean distance between them
-        self.similarity_matrix = -euclidean_distances_squared(X, X)
+        self.similarity_matrix = -compute_squared_euclidean_distances(X)
+        # by default preference is defined to be the median similarity of all pairs of inputs
+        preference = np.median(self.similarity_matrix)
+        np.fill_diagonal(self.similarity_matrix, preference)
 
         (
             self.labels,
