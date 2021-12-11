@@ -11,7 +11,7 @@ X, labels_true = make_blobs(
 
 # #############################################################################
 # Compute Affinity Propagation
-af = AffinityPropagation(preference=-50, random_state=0).fit(X)
+af = AffinityPropagation(preference=None, random_state=0).fit(X)
 cluster_centers_indices = af.cluster_centers_indices_
 labels = af.labels_
 
