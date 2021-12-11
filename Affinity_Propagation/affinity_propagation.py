@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def compute_squared_euclidean_distances(M):
+def compute_squared_euclidean_distances(M: np.ndarray) -> np.ndarray:
     """
     Considering the rows of M as vectors, compute the squared distance matrix between each pair of vectors.
     :param M: array of shape (n_samples_M, n_features)
@@ -12,11 +12,11 @@ def compute_squared_euclidean_distances(M):
 
 
 def compute_responsibility(
-        similarity_matrix,
-        availability_matrix,
-        responsibility_matrix,
-        damping_factor
-):
+        similarity_matrix: np.ndarray,
+        availability_matrix: np.ndarray,
+        responsibility_matrix: np.ndarray,
+        damping_factor: float
+) -> np.ndarray:
     """
     Compute the responsibilities.
     :param similarity_matrix:
@@ -30,10 +30,10 @@ def compute_responsibility(
 
 
 def compute_availability(
-        availability_matrix,
-        responsibility_matrix,
-        damping_factor
-):
+        availability_matrix: np.ndarray,
+        responsibility_matrix: np.ndarray,
+        damping_factor: float
+) -> np.ndarray:
     """
     Compute the availabilities.
     :param availability_matrix:
@@ -46,11 +46,11 @@ def compute_availability(
 
 
 def affinity_propagation(
-        similarity_matrix,
+        similarity_matrix: np.ndarray,
         convergence_iter=15,
         max_iter=200,
         damping_factor=0.5
-):
+) -> tuple[np.ndarray, np.ndarray, int]:
     """
     Run the affinity_propagation clustering algorithm.
     :param similarity_matrix: array of shape (n_samples, n_samples) - describes similarity between points.
@@ -92,7 +92,7 @@ class AffinityPropagation:
         self.labels = None
         self.n_iter = None
 
-    def fit(self, X):
+    def fit(self, X: np.ndarray):
         """
         Fit the clustering from features.
         :param X: array of shape (n_samples, n_features) - data
