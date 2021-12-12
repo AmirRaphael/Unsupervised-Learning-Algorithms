@@ -5,11 +5,21 @@ from sklearn.metrics import euclidean_distances
 # TODO: refactor implementation
 def compute_squared_euclidean_distances(M: np.ndarray) -> np.ndarray:
     """
-    Considering the rows of M as vectors, compute the squared distance matrix between each pair of vectors.
-    :param M: ndarray of shape (n_samples_M, n_features)
-    :return: distances matrix: ndarray of shape (n_samples_M, n_samples_M)
+    Considering M as a collection of vectors (x_1,...,x_n),
+    compute the n x n matrix D of all pairwise distances between the vectors.
+    :param M: ndarray of shape (n, m) - matrix
+    :return: distances matrix D: ndarray of shape (n, n) - d_ij = ||x_i - x_j||^2
+    We will use the alternative definition: D_ij = ||x_i||^2 - 2(x_i^T * x_j) + ||x_j||^2
     """
-    return euclidean_distances(M, squared=True)
+    # Get dimensions of M
+    n, m = M.shape
+    # Compute the Gram matrix
+    G = M @ M.T
+    # Compute H where: H_ij == G_jj == ||x_j||^2 and H_ji == G_ii == ||x_i||^2
+    H = np.tile(np.diag(G), (n, 1))
+    # Compute D
+    D = H - (2 * G) + H.T
+    return D
 
 
 # TODO: refactor implementation
@@ -121,7 +131,7 @@ def affinity_propagation(
     :param max_iter: int - maximum number of iterations.
     :param damping_factor: float in range (0.5, 1.0) - the extent to which the current value is maintained relative to incoming values
     :return:
-    cluster_centers_indices: array - index of cluster centers.
+    exemplar_indices: array - index of elexmplars (cluster centers).
     labels: array of size (n_samples) - cluster labels for each point.
     n_iter: int - total number of iterations until convergence.
     """
@@ -140,30 +150,31 @@ def affinity_propagation(
 
     for iteration in range(max_iter):
         n_iter = iteration + 1
-        current_something = R + A # TODO: understand this
-        current_labels = np.argmax(current_something, axis=1)
+        curr_sum_RA = R + A
+        curr_labels = np.argmax(curr_sum_RA, axis=1)
         R = compute_responsibility(S, A, R, damping_factor)
         A = compute_availability(A, R, damping_factor)
-        new_something = R + A # TODO: understand this
-        new_labels = np.argmax(new_something, axis=1)
+        new_sum_RA = R + A
+        new_labels = np.argmax(new_sum_RA, axis=1)
         # check if clusters changed
-        if np.all(current_labels == new_labels):
+        if np.all(curr_labels == new_labels):
             convergence_count += 1
             if convergence_count >= convergence_iter:
                 break
         else:
             convergence_count = 0
 
-    what_is_this = R + A # TODO: understand this
-    labels = np.argmax(what_is_this, axis=1)
-    cluster_centers_indices = np.unique(labels)
+    sum_RA = R + A
+    labels = np.argmax(sum_RA, axis=1)
+    exemplar_indices = np.unique(labels)
 
-    replace = dict(zip(cluster_centers_indices, range(len(cluster_centers_indices))))
+    # rearrange exemplar indices and labels to be values from [0,1,...,k]
+    replace = dict(zip(exemplar_indices, range(len(exemplar_indices))))
     mp = np.arange(0, max(labels) + 1)
     mp[list(replace.keys())] = list(replace.values())
     labels = mp[labels]
 
-    return cluster_centers_indices, labels, n_iter
+    return exemplar_indices, labels, n_iter
 
 
 class AffinityPropagation:
@@ -179,7 +190,7 @@ class AffinityPropagation:
         self.damping_factor = damping_factor
         self.preference = preference
         self.similarity_matrix = None
-        self.cluster_centers_indices = None
+        self.exemplar_indices = None
         self.labels = None
         self.n_iter = None
 
@@ -204,7 +215,7 @@ class AffinityPropagation:
             raise ValueError("preference must be 'median' or 'min'")
 
         (
-            self.cluster_centers_indices,
+            self.exemplar_indices,
             self.labels,
             self.n_iter
         ) = affinity_propagation(
