@@ -63,7 +63,6 @@ def update_responsibilities(
     return (damping_factor * R) + ((1 - damping_factor) * new_R)
 
 
-# TODO: refactor implementation
 def update_availabilities(
         A: np.ndarray,
         R: np.ndarray,
@@ -76,24 +75,24 @@ def update_availabilities(
     :param damping_factor: float in range (0.5, 1.0)
     :return: new availability matrix: ndarray of shape (n_samples, n_samples)
     the availability of a sample k to be the exemplar of sample i is computed by:
-    [for i != k] => a(i,k) = min{0, r(k,k) + sum(max{0, r(i',k)})} [i' != i,k]
+    [for i != k] => a(i,k) = min{0, r(k,k) + sum(max{0, r(i',k)}) [i' != i,k]
     [for i = k] => a(k,k) = sum(max{0, r(i',k)}) [i' != k]
     """
-    # Create a copy of the responsibility matrix and it's diagonal
-    T = R.copy()
-    diag_T = np.diag(T).copy()
+    n_samples = A.shape[0]
 
-    # Fill the diagonal with 0
-    np.fill_diagonal(T, 0)
+    # Create a temp copy of the responsibility matrix and it's diagonal
+    T = R.copy()  # T[i,k] = r(i,k)
+    diag_T = np.diag(T).copy()  # diag_T[k] = r(k,k)
 
-    # Replace all negative responsibilities with 0
-    T[T < 0] = 0
+    # Compute sum(max{0, r(i',k)}) [i' != k]
+    np.fill_diagonal(T, 0)  # Ignore values on the diagonal because we need i' != k
+    T[T < 0] = 0  # Ignore negative values because we need max{0, r(i',k)}
+    sum_T = np.sum(T, axis=0)  # sum_T[k] = sum(T[i',k]) for all i' != k
 
-    # Compute sum(max{0, r(i',k)})} [i' != i,k]
-    sum_T = np.sum(T, axis=0)
-
-    # Compute a(i,k) = min{0, r(k,k) + sum(max{0, r(i',k)})} [i' != i,k]
-    new_A = np.minimum(0, (diag_T + sum_T - T))
+    # Compute a(i,k) = min{0, r(k,k) + sum(max{0, r(i',k)}) [i' != i,k]
+    new_A = np.zeros((n_samples, n_samples)) + (diag_T + sum_T)  # new_A[i,k] = r(k,k) + sum(max{0, r(i',k)}) [i' != k]
+    new_A -= T  # Make correction since we need to use sum(max{0, r(i',k)}) where i' != i
+    new_A = np.minimum(0, new_A)  # Replace values greater than zero
 
     # Compute a(k,k) = sum(max{0, r(i',k)}) [i' != k]
     np.fill_diagonal(new_A, sum_T)
