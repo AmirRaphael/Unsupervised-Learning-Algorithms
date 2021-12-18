@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.spatial.distance import cdist
 
 
 def compute_squared_euclidean_distances(M: np.ndarray) -> np.ndarray:
@@ -174,11 +175,12 @@ class AffinityPropagation:
         self.exemplar_indices = None
         self.labels = None
         self.n_iter = None
+        self.cluster_centers = None
 
     def fit(self, X: np.ndarray):
         """
         Find cluster centers (exemplars) for the input data.
-        :param X: array of shape (n_samples, n_features) - data
+        :param X: ndarray of shape (n_samples, n_features) - data
         :return: self - the instance of this AffinityPropagation class
         """
         # The similarity of 2 data points is defined as the negative squared euclidean distance between them
@@ -206,4 +208,17 @@ class AffinityPropagation:
             damping_factor=self.damping_factor
         )
 
+        self.cluster_centers = X[self.exemplar_indices]
         return self
+
+    def predict(self, X: np.ndarray):
+        """
+        Predict the clusters for the input data
+        :param X: ndarray of shape (n_samples, n_features) - data
+        :return: ndarray of shape (n_samples) - labels
+        """
+        if self.cluster_centers is None:
+            raise Exception("unable to predict - there are no cluster centers (use fit() on train data and try again)")
+        distances = cdist(X, self.cluster_centers, metric="euclidean")
+        return np.argmin(distances, axis=1)
+    
