@@ -18,15 +18,10 @@ def main():
 
     for bandwidth in [0.7, 0.9, 1.1, 1.3]:
         for dataset in datasets:
-            # get data
             X, y = dataset
-            # create MeanShift object
             ms1 = _MeanShift(bandwidth=bandwidth)
-            # fit the model
             ms1.fit(X)
-            # get labels
             label1 = ms1.predict(X)
-            # get the cluster centers
             centers1 = ms1.centroids
             ms2 = MeanShift(bandwidth=bandwidth)
             time2 = time.time()
@@ -40,7 +35,7 @@ def main():
             print("Execution time of sklearn's MeanShift with bandwidth = {}: {}".format(bandwidth, time2))
 
             # plot results of both models
-            plt.figure()
+            plt.figure(figsize=(10, 8))
             plt.subplot(1, 2, 1)
             plt.scatter(X[:, 0], X[:, 1], c=label1, s=50, cmap='viridis')
             plt.scatter(centers1[:, 0], centers1[:, 1], c='black', s=200, alpha=0.5)
