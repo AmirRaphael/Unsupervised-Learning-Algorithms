@@ -14,9 +14,10 @@ def main():
     moons_data = get_moons()
 
     # put all data in list
-    datasets = [circle_data, varied_data, blobs_data, aniso_data, moons_data]
+    datasets_gauss = [varied_data, blobs_data, aniso_data]
+    datasets_non_gauss = [circle_data, moons_data]
 
-    for dataset in datasets:
+    for dataset in datasets_gauss:
         dataset = dataset[0]
         # create GMM object
         gmm1 = GMM(dataset, 3)
@@ -35,6 +36,27 @@ def main():
         plt.scatter(dataset[:, 0], dataset[:, 1], c=gmm2.predict(dataset))
         plt.title('sklearn GMM')
         plt.show()
+
+    for dataset in datasets_non_gauss:
+        dataset = dataset[0]
+        # create GMM object
+        gmm1 = GMM(dataset, 2)
+        # fit GMM
+        gmm1.fit()
+
+        gmm2 = GaussianMixture(n_components=2, covariance_type='full', random_state=0)
+        gmm2.fit(dataset)
+
+        # plot results of both implementations
+        plt.figure()
+        plt.subplot(1, 2, 1)
+        plt.scatter(dataset[:, 0], dataset[:, 1], c=gmm1.predict())
+        plt.title('our GMM')
+        plt.subplot(1, 2, 2)
+        plt.scatter(dataset[:, 0], dataset[:, 1], c=gmm2.predict(dataset))
+        plt.title('sklearn GMM')
+        plt.show()
+
 
 
 if __name__ == '__main__':
