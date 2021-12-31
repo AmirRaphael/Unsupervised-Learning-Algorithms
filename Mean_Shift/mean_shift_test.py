@@ -1,3 +1,5 @@
+import time
+
 import matplotlib.pyplot as plt
 from sklearn.cluster import MeanShift
 from Mean_Shift.mean_shift import MeanShift as _MeanShift
@@ -27,9 +29,15 @@ def main():
             # get the cluster centers
             centers1 = ms1.centroids
             ms2 = MeanShift(bandwidth=bandwidth)
+            time2 = time.time()
             ms2.fit(X)
+            time2 = time.time() - time2
             label2 = ms2.predict(X)
             centers2 = ms2.cluster_centers_
+
+            #print execution time of both algorithms
+            print("Execution time of our MeanShift with bandwidth = {}: {}".format(bandwidth, ms1.execution_time))
+            print("Execution time of sklearn's MeanShift with bandwidth = {}: {}".format(bandwidth, time2))
 
             # plot results of both models
             plt.figure()

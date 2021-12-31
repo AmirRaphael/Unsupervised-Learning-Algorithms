@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 from multiprocessing import Pool
 
@@ -21,23 +23,31 @@ class MeanShift:
         self.max_iter = max_iter
         self.tolerance = tolerance
         self.centroids = None
+        self.execution_time = None
 
     def fit(self, data):
+        #get start time
+        start_time = time.time()
         centroids = np.copy(data)
-        for i in range(self.max_iter):
-            print(f'iteration {i}')
-            p = Pool(5)
-            centroids_new = p.starmap(shift, [(centroid, data, self.bandwidth) for centroid in centroids])
-            p.close()
-            p.join()
-            centroids_new = np.asarray(centroids_new)
-            # centroids_new = np.asarray([shift(centroid, data, self.bandwidth) for centroid in centroids])
-            if np.linalg.norm(centroids_new - centroids) < self.tolerance:
-                break
-            centroids = centroids_new
+        p = Pool(10)
+        centroids = p.starmap(self.single_center_process, [(centroid, data) for centroid in centroids])
+        p.close()
+        p.join()
+        filtered_centroids = self.filter_centroids(centroids)
+        self.centroids = np.asarray(filtered_centroids)
 
         filtered_centroids = self.filter_centroids(centroids)
         self.centroids = np.asarray(filtered_centroids)
+        end_time = time.time()
+        self.execution_time = end_time - start_time
+
+    def single_center_process(self, centroid, data):
+        for i in range(self.max_iter):
+            centroid_new = shift(centroid, data, self.bandwidth)
+            if np.linalg.norm(centroid_new - centroid) < self.tolerance:
+                break
+            centroid = centroid_new
+        return centroid
 
     def predict(self, data):
         distances = np.linalg.norm(self.centroids[:, np.newaxis, :] - data[np.newaxis, :, :], axis=-1)
