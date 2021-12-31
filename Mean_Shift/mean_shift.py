@@ -1,4 +1,5 @@
 import numpy as np
+from multiprocessing import Pool
 
 
 def gaussian_kernel(x, y, sigma):
@@ -25,7 +26,12 @@ class MeanShift:
         centroids = np.copy(data)
         for i in range(self.max_iter):
             print(f'iteration {i}')
-            centroids_new = np.asarray([shift(centroid, data, self.bandwidth) for centroid in centroids])
+            p = Pool(5)
+            centroids_new = p.starmap(shift, [(centroid, data, self.bandwidth) for centroid in centroids])
+            p.close()
+            p.join()
+            centroids_new = np.asarray(centroids_new)
+            # centroids_new = np.asarray([shift(centroid, data, self.bandwidth) for centroid in centroids])
             if np.linalg.norm(centroids_new - centroids) < self.tolerance:
                 break
             centroids = centroids_new
