@@ -172,6 +172,7 @@ class AffinityPropagation:
         self.max_iter = max_iter
         self.damping_factor = damping_factor
         self.preference = preference
+        self.preference_val = None
         self.exemplar_indices = None
         self.labels = None
         self.n_iter = None
@@ -190,10 +191,12 @@ class AffinityPropagation:
             # By default preference is defined to be the median similarity of all pairs of inputs
             preference = np.median(similarity_matrix)
             np.fill_diagonal(similarity_matrix, preference)
+            self.preference_val = preference
         elif self.preference == "min":
             # Setting the preference to the minimum similarity of all pairs of inputs will result in fewer clusters
-            preference = np.min(similarity_matrix) - 1
+            preference = np.min(similarity_matrix)
             np.fill_diagonal(similarity_matrix, preference)
+            self.preference_val = preference
         else:
             raise ValueError("preference must be 'median' or 'min'")
 

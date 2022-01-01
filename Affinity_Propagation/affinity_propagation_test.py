@@ -1,49 +1,43 @@
-from Affinity_Propagation.affinity_propagation import AffinityPropagation
-from sklearn.datasets import make_blobs
-
-# #############################################################################
-# Generate sample data
-centers = [[1, 1], [-1, -1], [1, -1]]
-X, labels_true = make_blobs(
-    n_samples=300, centers=centers, cluster_std=0.5, random_state=0
-)
-
-# #############################################################################
-# Compute Affinity Propagation
-ap = AffinityPropagation(preference="median").fit(X)
-cluster_centers_indices = ap.exemplar_indices
-labels = ap.labels
-n_iter = ap.n_iter
-
-n_clusters_ = len(cluster_centers_indices)
-
-print("Estimated number of clusters: %d" % n_clusters_)
-print("Finished in %d iterations" % n_iter)
-
-# #############################################################################
-# Plot result
 import matplotlib.pyplot as plt
-from itertools import cycle
+from sklearn.cluster import AffinityPropagation
+from Affinity_Propagation.affinity_propagation import AffinityPropagation as _AffinityPropagation
+from dataset_creator import get_blobs, get_moons, get_circles, get_aniso, get_varied
 
-plt.close("all")
-plt.figure(1)
-plt.clf()
 
-colors = cycle("bgrcmykbgrcmykbgrcmykbgrcmyk")
-for k, col in zip(range(n_clusters_), colors):
-    class_members = labels == k
-    cluster_center = X[cluster_centers_indices[k]]
-    plt.plot(X[class_members, 0], X[class_members, 1], col + ".")
-    plt.plot(
-        cluster_center[0],
-        cluster_center[1],
-        "o",
-        markerfacecolor=col,
-        markeredgecolor="k",
-        markersize=14,
-    )
-    for x in X[class_members]:
-        plt.plot([cluster_center[0], x[0]], [cluster_center[1], x[1]], col)
+def main():
+    circle_data = (get_circles(), {"damping": 0.77})
+    moons_data = (get_moons(), {"damping": 0.75})
+    varied_data = (get_varied(), {"damping": 0.9})
+    aniso_data = (get_aniso(), {"damping": 0.9})
+    blobs_data = (get_blobs(), {"damping": 0.9})
 
-plt.title("Estimated number of clusters: %d" % n_clusters_)
-plt.show()
+    # put all data in list
+    datasets = [blobs_data, circle_data, varied_data, aniso_data, moons_data]
+
+    for pref in ["min", "median"]:
+        for (dataset, params) in datasets:
+            X, y = dataset
+            ap = _AffinityPropagation(preference=pref, damping_factor=params["damping"]).fit(X)
+            label1 = ap.labels
+            centers1 = ap.cluster_centers
+            print('Our AP finished with {} clusters'.format(len(centers1)))
+            ap2 = AffinityPropagation(preference=ap.preference_val, damping=params["damping"]).fit(X)
+            label2 = ap2.labels_
+            centers2 = ap2.cluster_centers_
+            print('Sklearn AP finished with {} clusters'.format(len(centers2)))
+
+            # plot results of both models
+            plt.figure(figsize=(10, 8))
+            plt.subplot(1, 2, 1)
+            plt.scatter(X[:, 0], X[:, 1], c=label1, s=50, cmap='viridis')
+            plt.scatter(centers1[:, 0], centers1[:, 1], c='black', s=200, alpha=0.5)
+            plt.title('our AP with pref = {}'.format(pref))
+            plt.subplot(1, 2, 2)
+            plt.scatter(X[:, 0], X[:, 1], c=label2, s=50, cmap='viridis')
+            plt.scatter(centers2[:, 0], centers2[:, 1], c='black', s=200, alpha=0.5)
+            plt.title('sklearn AP with pref = {}'.format(pref))
+            plt.show()
+
+
+if __name__ == '__main__':
+    main()
