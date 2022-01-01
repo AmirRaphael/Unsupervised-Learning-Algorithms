@@ -6,8 +6,8 @@ from dataset_creator import get_blobs, get_moons, get_circles, get_aniso, get_va
 
 
 def main():
-    circle_data = (get_circles(), {"damping": 0.77, "bandwidth": 1.1, "n_gaussians": 2})
-    moons_data = (get_moons(), {"damping": 0.75, "bandwidth": 1.1, "n_gaussians": 2})
+    circle_data = (get_circles(), {"damping": 0.77, "bandwidth": 0.9, "n_gaussians": 2})
+    moons_data = (get_moons(), {"damping": 0.75, "bandwidth": 0.9, "n_gaussians": 2})
     varied_data = (get_varied(), {"damping": 0.9, "bandwidth": 1.1, "n_gaussians": 3})
     aniso_data = (get_aniso(), {"damping": 0.9, "bandwidth": 1.1, "n_gaussians": 3})
     blobs_data = (get_blobs(), {"damping": 0.9, "bandwidth": 1.1, "n_gaussians": 3})
@@ -44,8 +44,6 @@ def main():
         plt.scatter(means_gmm[:, 0], means_gmm[:, 1], c='black', s=200, alpha=0.5)
         plt.title('GMM')
         plt.show()
-
-        
 
 
 if __name__ == '__main__':
