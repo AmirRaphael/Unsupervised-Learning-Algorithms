@@ -29,7 +29,22 @@ def main():
         labels_gmm = gmm.predict()
         means_gmm = gmm.means
 
-        # plot results of both models
+        # plot results of each algorithm with centroids
+        plt.figure(figsize=(10, 10))
+        plt.subplot(221)
+        plt.scatter(X[:, 0], X[:, 1], c=labels_ap, s=50, cmap='viridis')
+        plt.scatter(centers_ap[:, 0], centers_ap[:, 1], c='black', s=200, alpha=0.5)
+        plt.title('Affinity Propagation')
+        plt.subplot(222)
+        plt.scatter(X[:, 0], X[:, 1], c=labels_ms, s=50, cmap='viridis')
+        plt.scatter(centers_ms[:, 0], centers_ms[:, 1], c='black', s=200, alpha=0.5)
+        plt.title('Mean Shift')
+        plt.subplot(223)
+        plt.scatter(X[:, 0], X[:, 1], c=labels_gmm, s=50, cmap='viridis')
+        plt.scatter(means_gmm[:, 0], means_gmm[:, 1], c='black', s=200, alpha=0.5)
+        plt.title('GMM')
+        plt.show()
+
         
 
 
