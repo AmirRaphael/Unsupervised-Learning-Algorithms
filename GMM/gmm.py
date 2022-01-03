@@ -1,7 +1,10 @@
 import numpy as np
 from scipy.stats import multivariate_normal
 
-from GMM.utils import get_random_spd
+
+def get_random_spd(n):
+    x = np.random.normal(0, 1, size=(n, n))
+    return np.dot(x, x.transpose())
 
 
 def gaussian(X, mean, cov):
